@@ -1,28 +1,32 @@
 package com.springframework.demo.services;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.regex.Pattern;
 
-import javax.annotation.PostConstruct;
+import javax.sql.rowset.serial.SerialArray;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.google.common.base.Throwables;
 import com.springframework.model.Customer;
 
 @Service
 public class CustomerService {
 
-	public static Map<Integer, Customer> customerHashMap = new HashMap<Integer, Customer>();
+	private static final Logger LOGGER = LoggerFactory.getLogger(CustomerService.class);
+
+	public static Map<String, Customer> customerHashMap = new HashMap<String, Customer>();
 
 	@Autowired
 	public CustomerService() {}
 
-	public CustomerService(Map<Integer, Customer> customerHashMap) {
+	public CustomerService(Map<String, Customer> customerHashMap) {
 		super();
 		CustomerService.customerHashMap = customerHashMap;
 	}
@@ -31,67 +35,86 @@ public class CustomerService {
 	Customer customer;
 
 
-	public Map<Integer, Customer> getCustomerHashMap() {
+	public Map<String, Customer> getCustomerHashMap() {
 		return customerHashMap;
 	}
 
-	public void setCustomerHashMap(Map<Integer, Customer> customerHashMap) {
+	public void setCustomerHashMap(Map<String, Customer> customerHashMap) {
 		CustomerService.customerHashMap = customerHashMap;
 	}
 
-	public String addCustomer(Map<Integer, Customer> customerHashMap, Integer ckey, Customer cValue) throws Exception {
-		String age=cValue.getAge();
-		CustomerService cs = new CustomerService();
+	public String addCustomer(Map<String, Customer> customerHashMap, String ckey, Customer csString) throws Exception {
+		String id = csString.getCustomerID();
+		String age = csString.getAge();
+		String lastName = csString.getLastName();
+		String firstName = csString.getFirstName();
+		String error = null;
+		LOGGER.info("User ID", id);
 
 		try {
-			
-			if(age.matches("^[0-9]+$") != true){
-				throw new Exception ("Invalid Input Please Try Again! Customer age should be 18 - 99 age.");
+			if(id.matches("^[0-9]+$") != true){
+				error = "Invalid Customer ID Input!. Should be +ve value and Should be an Integer Number";
+				throw new Exception ("Customer ID invalid input.");
+			}
+			if(age.matches("^[0-9]+$") != true) {	
+				error = "Invalid Customer Age Input!. Should be +ve value and Should be an Integer Number.";
+				throw new Exception ("Customer Age invalid input.");
+			} 
+			if(lastName.matches("[a-zA-Z]+") != true){
+				error = "Invalid Customer First Name!. Accept only Alphabets.";
+				throw new Exception("Customer First Name invalid input.");
+			}
+			if(firstName.matches("[a-zA-Z]+") != true){
+				error = "Invalid Customer Last Name!. Accept only Alphabets.";
+				throw new Exception ("Customer First Name invalid input.");
 			}
 			else {
-				customerHashMap.put(ckey, cValue);	
+				customerHashMap.put(id, csString);	
 			}
 			try {
-				// System.out.println(Integer.parseUnsignedInt("[0-9]",age));
-				//cs.isNonZero(age) == false &&
 				if(!(Integer.parseInt(age) >=18 && Integer.parseInt(age) <=99)) {	
-					throw new Exception ("Invalid Input Please Try Again! Customer age should be 18 - 99 age.");
+					error = "Invalid Customer Age. Customer age should be 18 - 99 age.";
+					throw new Exception ("Customer First Age invalid input.");
 				}
 				else {
-					customerHashMap.put(ckey, cValue);				
+					customerHashMap.put(id, csString);				
 				}
 			}
 			catch (Exception e){
-				return "Invalid Input Please Try Again! Customer age should be 18 - 99 age.";
-			}
+				CustomerService.getStackTrackException(e);
+				return error;
+			}			
 		}
-
-		catch (Exception eee1){
-			return "Invalid Input Please! Please use only valid integer for age from 18-99 age.";
+		catch (NumberFormatException e) {
+			CustomerService.getStackTrackException(e);
+			return "Invalid Customer ID Pleaes try once again";
 		}
-
+		catch (Exception e){
+			CustomerService.getStackTrackException(e);
+			return error; 
+		}
 		return "Successfully Created";
 	}
 
-	public String deleteCustomer(Map<Integer, Customer> customerHashMap, Integer cKey) {
+	public String deleteCustomer(Map<String, Customer> customerHashMap, String cKey) {
 		customerHashMap.remove(cKey);
 		return "Successfully Deleted Entry from Map";
 	}
 
-	public String deleteAllCustomers(Map<Integer, Customer> customerHashMap) {
+	public String deleteAllCustomers(Map<String, Customer> customerHashMap) {
 		customerHashMap.clear();
 		return "Removed All Cusotmers.";
 	}
 
-	public Customer getCustomer(Map<Integer, Customer> customerHashMap, Integer cKey) {
+	public Customer getCustomer(Map<String, Customer> customerHashMap, String cKey) {
 		return customerHashMap.get(cKey);
 	}
 
-	public Map<Integer, Customer> getAllCustomers(Map<Integer, Customer> customerHashMap) {
+	public Map<String, Customer> getAllCustomers(Map<String, Customer> customerHashMap) {
 		return customerHashMap;
 	}
 
-	public Customer updateCustomer(Map<Integer, Customer> customerHashMap, Integer ckey, Customer cValue) {
+	public Customer updateCustomer(Map<String, Customer> customerHashMap, String ckey, Customer cValue) {
 		customerHashMap.put(ckey, cValue);
 		return customerHashMap.get(ckey);
 	}
@@ -114,5 +137,9 @@ public class CustomerService {
 			return false;
 		}
 		return true;
+	}
+	public static void getStackTrackException(Exception e) {
+		String s = Throwables.getStackTraceAsString(e);
+		System.out.println(s);
 	}
 }
