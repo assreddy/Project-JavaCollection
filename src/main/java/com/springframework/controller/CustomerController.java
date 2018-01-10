@@ -7,6 +7,8 @@ import javax.annotation.PostConstruct;
 
 import org.hibernate.mapping.Set;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,38 +40,44 @@ public class CustomerController {
 
 	@PostConstruct
 	public void initIt() throws Exception{
-		Customer c1 = new Customer(1,"fn1","ln1","10" ,100);
-		Customer c2 = new Customer(2,"fn2","ln2","20",200);
-		Customer c3 = new Customer(3,"fn3","ln3","30",300);
-		Customer c4 = new Customer(4,"fn4","ln4","40",400);
-		Customer c5 =new Customer(5,"fn5","ln5","50",500);
-		customerService.getCustomerHashMap().put(c1.getCustomerID(), new Customer(1,"fn1","ln1","10",100));
-		customerService.getCustomerHashMap().put(c2.getCustomerID(), new Customer(2,"fn2","ln2","20",200));
-		customerService.getCustomerHashMap().put(c3.getCustomerID(), new Customer(3,"fn3","ln3","30",300));
-		customerService.getCustomerHashMap().put(c4.getCustomerID(), new Customer(4,"fn4","ln4","40",400));
-		customerService.getCustomerHashMap().put(c5.getCustomerID(), new Customer(5,"fn5","ln5","50",500));
+		Customer c1 = new Customer("1","fn1","ln1","10" ,100);
+//		Customer c2 = new Customer(2,"fn2","ln2","20",200);
+//		Customer c3 = new Customer(3,"fn3","ln3","30",300);
+//		Customer c4 = new Customer(4,"fn4","ln4","40",400);
+//		Customer c5 =new Customer(5,"fn5","ln5","50",500);
+		customerService.getCustomerHashMap().put(c1.getCustomerID(), new Customer("1","fn1","ln1","10",100));
+//		customerService.getCustomerHashMap().put(c2.getCustomerID(), new Customer(2,"fn2","ln2","20",200));
+//		customerService.getCustomerHashMap().put(c3.getCustomerID(), new Customer(3,"fn3","ln3","30",300));
+//		customerService.getCustomerHashMap().put(c4.getCustomerID(), new Customer(4,"fn4","ln4","40",400));
+//		customerService.getCustomerHashMap().put(c5.getCustomerID(), new Customer(5,"fn5","ln5","50",500));
 	}
 
 	@RequestMapping(method=RequestMethod.GET,
 			value="/get/{customerID}",
 			produces = "application/json")
-	public Customer getMethod(@RequestParam("customerID") int customerID) {
+	public Customer getMethod(@RequestParam("customerID") String customerID) {
 		return customerService.getCustomer(customerService.getCustomerHashMap(), customerID);
 	}
 
 	@RequestMapping(method=RequestMethod.GET,
 			value="/get/all/",
 			produces = "application/json")
-	public @ResponseBody Map<Integer, Customer> getAllMethod() {
+	public @ResponseBody Map<String, Customer> getAllMethod() {
 		return customerService.getAllCustomers(customerService.getCustomerHashMap());
 	}
 
 	@RequestMapping(method=RequestMethod.POST,
 			value="/post",
 			consumes = "application/json")
-	@ResponseBody
+//			produces = )
+	@ResponseBody	
 	public String postMethod(@RequestBody Customer customerInput) throws Exception {
+//		String idString = customerInput.getCustomerIDString();
+//		int intID = Integer.parseInt(idString);
 		String resposne = customerService.addCustomer(customerService.getCustomerHashMap(), customerInput.getCustomerID(), customerInput);
+//		if(resposne.contains("Bad Request") == true) {
+//			resposne = "New Message";
+//		}
 		 return resposne;
 	}
 
